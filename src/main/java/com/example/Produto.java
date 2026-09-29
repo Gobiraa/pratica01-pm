@@ -17,7 +17,7 @@ public class Produto {
         this.nome = validarNome(nome);
         this.codigo = validarCodigo(codigo);
         this.preco = validarPreco(preco);
-        setQuantidadeEstoque(quantidadeEstoque);
+        this.quantidadeEstoque = validarQuantidadeEstoque(quantidadeEstoque);
     }
 
     private static String validarNome(String nome) {
@@ -39,6 +39,13 @@ public class Produto {
             throw new IllegalArgumentException("O preço não pode ser negativo.");
         }
         return preco;
+    }
+
+    private static int validarQuantidadeEstoque(int quantidadeEstoque) {
+        if (quantidadeEstoque < 0) {
+            throw new IllegalArgumentException("A quantidade em estoque não pode ser negativa.");
+        }
+        return quantidadeEstoque;
     }
 
     public String getNome() {
@@ -70,10 +77,7 @@ public class Produto {
     }
 
     public void setQuantidadeEstoque(int quantidadeEstoque) {
-        if (quantidadeEstoque < 0) {
-            throw new IllegalArgumentException("A quantidade em estoque não pode ser negativa.");
-        }
-        this.quantidadeEstoque = quantidadeEstoque;
+        this.quantidadeEstoque = validarQuantidadeEstoque(quantidadeEstoque);
     }
 
     public void adicionarEstoque(int quantidade) {
