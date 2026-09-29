@@ -1,16 +1,23 @@
 package com.example;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 public class Produto {
     private String nome;
     private String codigo;
     private BigDecimal preco;
+    private int quantidadeEstoque;
 
     public Produto(String nome, String codigo, BigDecimal preco) {
+        this(nome, codigo, preco, 0);
+    }
+
+    public Produto(String nome, String codigo, BigDecimal preco, int quantidadeEstoque) {
         this.nome = validarNome(nome);
         this.codigo = validarCodigo(codigo);
         this.preco = validarPreco(preco);
+        setQuantidadeEstoque(quantidadeEstoque);
     }
 
     private static String validarNome(String nome) {
@@ -56,5 +63,37 @@ public class Produto {
 
     public void setPreco(BigDecimal preco) {
         this.preco = validarPreco(preco);
+    }
+
+    public int getQuantidadeEstoque() {
+        return quantidadeEstoque;
+    }
+
+    public void setQuantidadeEstoque(int quantidadeEstoque) {
+        if (quantidadeEstoque < 0) {
+            throw new IllegalArgumentException("A quantidade em estoque não pode ser negativa.");
+        }
+        this.quantidadeEstoque = quantidadeEstoque;
+    }
+
+    public void adicionarEstoque(int quantidade) {
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("A quantidade a adicionar deve ser maior que zero.");
+        }
+        quantidadeEstoque = Math.addExact(quantidadeEstoque, quantidade);
+    }
+
+    public boolean retirarEstoque(int quantidade) {
+        if (quantidade <= 0 || quantidade > quantidadeEstoque) {
+            return false;
+        }
+        quantidadeEstoque -= quantidade;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(Locale.ROOT, "%s | %s | %.2f | estoque: %d",
+                codigo, nome, preco, quantidadeEstoque);
     }
 }

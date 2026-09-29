@@ -10,7 +10,7 @@ public class Fatura {
     private final List<Item> itens = new ArrayList<>();
     private BigDecimal valorTotal = BigDecimal.ZERO;
 
-    public void comprar(Produto produto, int quantidade) {
+    public boolean comprar(Produto produto, int quantidade) {
         Objects.requireNonNull(produto, "O produto é obrigatório.");
         if (quantidade <= 0) {
             throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
@@ -18,25 +18,47 @@ public class Fatura {
 
         for (Item item : itens) {
             if (item.getProduto().getCodigo().equalsIgnoreCase(produto.getCodigo())) {
+                if (item.getQuantidade() > Integer.MAX_VALUE - quantidade) {
+                    throw new IllegalArgumentException("A quantidade total excede o limite permitido.");
+                }
+                if (!produto.retirarEstoque(quantidade)) {
+                    return false;
+                }
                 item.adicionarQuantidade(quantidade);
                 recalcularValorTotal();
-                return;
+                return true;
             }
         }
 
+        if (!produto.retirarEstoque(quantidade)) {
+            return false;
+        }
         itens.add(new Item(produto, quantidade));
         recalcularValorTotal();
+        return true;
     }
 
     public void removerItem(int indice) {
         validarIndice(indice);
-        itens.remove(indice);
+        Item removido = itens.remove(indice);
+        removido.getProduto().adicionarEstoque(removido.getQuantidade());
         recalcularValorTotal();
     }
 
     public void alterarQuantidade(int indice, int quantidade) {
         validarIndice(indice);
-        itens.get(indice).setQuantidade(quantidade);
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
+        }
+        Item item = itens.get(indice);
+        int diferenca = quantidade - item.getQuantidade();
+        if (diferenca > 0 && !item.getProduto().retirarEstoque(diferenca)) {
+            throw new IllegalStateException("Estoque insuficiente para aumentar a quantidade da fatura.");
+        }
+        if (diferenca < 0) {
+            item.getProduto().adicionarEstoque(-diferenca);
+        }
+        item.setQuantidade(quantidade);
         recalcularValorTotal();
     }
 
